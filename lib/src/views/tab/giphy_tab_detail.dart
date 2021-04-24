@@ -120,17 +120,15 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: StaggeredGridView.countBuilder(
-          scrollDirection: _scrollDirection,
-          controller: widget.scrollController,
-          itemCount: _list.length,
-          crossAxisCount: _crossAxisCount,
-          mainAxisSpacing: _spacing,
-          crossAxisSpacing: _spacing,
-          itemBuilder: (ctx, idx) {
-            GiphyGif _gif = _list[idx];
-            return _item(_gif);
-          },
-          staggeredTileBuilder: (idx) => StaggeredTile.fit(1)),
+        scrollDirection: _scrollDirection,
+        controller: widget.scrollController,
+        itemCount: _list.length,
+        crossAxisCount: _crossAxisCount,
+        mainAxisSpacing: _spacing,
+        crossAxisSpacing: _spacing,
+        itemBuilder: (ctx, idx) => _item(_list[idx]),
+        staggeredTileBuilder: (idx) => StaggeredTile.fit(1),
+      ),
     );
   }
 

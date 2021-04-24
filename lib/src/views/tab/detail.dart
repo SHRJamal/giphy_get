@@ -133,21 +133,20 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
         crossAxisCount: _crossAxisCount,
         mainAxisSpacing: _spacing,
         crossAxisSpacing: _spacing,
-        itemBuilder: (ctx, idx) => _item(_list[idx]),
+        itemBuilder: (_, i) {
+          final gif = _list[i];
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: InkWell(
+              onTap: () => _selectedGif(gif),
+              child: CachedNetworkImage(
+                imageUrl: gif.images!.original.webp,
+                fit: BoxFit.fill,
+              ),
+            ),
+          );
+        },
         staggeredTileBuilder: (idx) => StaggeredTile.fit(1),
-      ),
-    );
-  }
-
-  Widget _item(GiphyGif gif) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10.0),
-      child: InkWell(
-        onTap: () => _selectedGif(gif),
-        child: CachedNetworkImage(
-          imageUrl: gif.images!.fixedWidth.webp,
-          fit: BoxFit.fill,
-        ),
       ),
     );
   }
@@ -178,19 +177,22 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
       // If query text is not null search gif else trendings
       if (_appBarProvider.queryText.isNotEmpty &&
           widget.type != GiphyType.emoji) {
-        _collection = await client.search(_appBarProvider.queryText,
-            lang: _tabProvider.lang,
-            offset: offset,
-            rating: _tabProvider.rating,
-            type: widget.type,
-            limit: _limit);
+        _collection = await client.search(
+          _appBarProvider.queryText,
+          lang: _tabProvider.lang,
+          offset: offset,
+          rating: _tabProvider.rating,
+          type: widget.type,
+          limit: _limit,
+        );
       } else {
         _collection = await client.trending(
-            lang: _tabProvider.lang,
-            offset: offset,
-            rating: _tabProvider.rating,
-            type: widget.type,
-            limit: _limit);
+          lang: _tabProvider.lang,
+          offset: offset,
+          rating: _tabProvider.rating,
+          type: widget.type,
+          limit: _limit,
+        );
       }
     }
 
