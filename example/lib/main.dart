@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    client = GiphyClient(apiKey: giphy_api_key);
+    client = GiphyClient(apiKey: giphy_api_key, randomId: randomId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initAsync();
     });
@@ -127,21 +127,19 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            GiphyGif gif = await GiphyGet.getGif(
-              context: context,
-              apiKey: giphy_api_key, //YOUR API KEY HERE
-              lang: GiphyLanguage.spanish,
-            );
-            if (gif != null && mounted) {
-              setState(() {
-                currentGif = gif;
-              });
-            }
-          },
-          tooltip: 'Open Sticker',
-          child: Icon(Icons
-              .insert_emoticon)), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: () async {
+          GiphyGif gif = await GiphyGet.getGif(
+            context: context,
+            apiKey: giphy_api_key, //YOUR API KEY HERE
+            lang: GiphyLanguage.spanish,
+          );
+          if (gif != null && mounted) {
+            setState(() => currentGif = gif);
+          }
+        },
+        tooltip: 'Open Sticker',
+        child: Icon(Icons.insert_emoticon),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

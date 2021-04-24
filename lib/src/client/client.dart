@@ -108,14 +108,14 @@ class GiphyClient {
   Future<GiphyGif> _fetchGif(Uri uri) async {
     final response = await _getWithAuthorization(uri);
 
-    return GiphyGif.fromJson((json.decode(response.body)
+    return GiphyGif.fromMap((json.decode(response.body)
         as Map<String, dynamic>)['data'] as Map<String, dynamic>);
   }
 
   Future<GiphyCollection> _fetchCollection(Uri uri) async {
     final response = await _getWithAuthorization(uri);
 
-    return GiphyCollection.fromJson(
+    return GiphyCollection.fromMap(
         json.decode(response.body) as Map<String, dynamic>);
   }
 

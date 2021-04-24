@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
+
 import 'gif.dart';
 
-class GiphyCollection {
+class GiphyCollection extends Equatable {
   final List<GiphyGif> data;
   final GiphyPagination? pagination;
   final GiphyMeta? meta;
@@ -11,43 +13,29 @@ class GiphyCollection {
     this.meta,
   });
 
-  factory GiphyCollection.fromJson(Map<String, dynamic> json) =>
+  factory GiphyCollection.fromMap(Map<String, dynamic> json) =>
       GiphyCollection(
         data: [
           for (final e in json['data'] as List? ?? [])
-            if (e != null) GiphyGif.fromJson(Map<String, dynamic>.from(e))
+            if (e != null) GiphyGif.fromMap(Map<String, dynamic>.from(e))
         ],
         pagination: json['pagination'] == null
             ? null
-            : GiphyPagination.fromJson(
+            : GiphyPagination.fromMap(
                 json['pagination'] as Map<String, dynamic>),
         meta: json['meta'] == null
             ? null
-            : GiphyMeta.fromJson(json['meta'] as Map<String, dynamic>),
+            : GiphyMeta.fromMap(json['meta'] as Map<String, dynamic>),
       );
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'data': data, 'pagination': pagination, 'meta': meta};
+  @override
+  List<Object?> get props => [data, pagination, meta];
 
   @override
-  String toString() {
-    return 'GiphyCollection{data: $data, pagination: $pagination, meta: $meta}';
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GiphyCollection &&
-          runtimeType == other.runtimeType &&
-          data == other.data &&
-          pagination == other.pagination &&
-          meta == other.meta;
-
-  @override
-  int get hashCode => data.hashCode ^ pagination.hashCode ^ meta.hashCode;
+  bool get stringify => true;
 }
 
-class GiphyPagination {
+class GiphyPagination extends Equatable {
   final int totalCount;
   final int count;
   final int offset;
@@ -58,40 +46,21 @@ class GiphyPagination {
     required this.offset,
   });
 
-  factory GiphyPagination.fromJson(Map<String, dynamic> json) =>
+  factory GiphyPagination.fromMap(Map<String, dynamic> json) =>
       GiphyPagination(
         totalCount: json['total_count'] as int? ?? 0,
         count: json['count'] as int? ?? 0,
         offset: json['offset'] as int? ?? 0,
       );
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'total_count': totalCount,
-      'count': count,
-      'offset': offset
-    };
-  }
+  @override
+  bool get stringify => true;
 
   @override
-  String toString() {
-    return 'GiphyPagination{totalCount: $totalCount, count: $count, offset: $offset}';
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GiphyPagination &&
-          runtimeType == other.runtimeType &&
-          totalCount == other.totalCount &&
-          count == other.count &&
-          offset == other.offset;
-
-  @override
-  int get hashCode => totalCount.hashCode ^ count.hashCode ^ offset.hashCode;
+  List<Object?> get props => [totalCount, count, offset];
 }
 
-class GiphyMeta {
+class GiphyMeta extends Equatable {
   final int status;
   final String msg;
   final String responseId;
@@ -102,34 +71,15 @@ class GiphyMeta {
     required this.responseId,
   });
 
-  factory GiphyMeta.fromJson(Map<String, dynamic> json) => GiphyMeta(
+  factory GiphyMeta.fromMap(Map<String, dynamic> json) => GiphyMeta(
         status: json['status'] as int? ?? 0,
         msg: json['msg'] as String? ?? '',
         responseId: json['response_id'] as String? ?? '',
       );
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'status': status,
-      'msg': msg,
-      'response_id': responseId
-    };
-  }
+  @override
+  List<Object?> get props => [status, msg, responseId];
 
   @override
-  String toString() {
-    return 'GiphyMeta{status: $status, msg: $msg, responseId: $responseId}';
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GiphyMeta &&
-          runtimeType == other.runtimeType &&
-          status == other.status &&
-          msg == other.msg &&
-          responseId == other.responseId;
-
-  @override
-  int get hashCode => status.hashCode ^ msg.hashCode ^ responseId.hashCode;
+  bool get stringify => true;
 }

@@ -1,24 +1,20 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:giphy_get/src/client/client.dart';
+import 'package:giphy_get/src/client/models/collection.dart';
+import 'package:giphy_get/src/client/models/gif.dart';
+import 'package:giphy_get/src/client/models/type.dart';
+import 'package:giphy_get/src/providers/app_bar_provider.dart';
+import 'package:giphy_get/src/providers/tab_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../client/client.dart';
-import '../../client/models/collection.dart';
-import '../../client/models/gif.dart';
-import '../../client/models/type.dart';
-import '../../providers/app_bar_provider.dart';
-import '../../providers/tab_provider.dart';
 
 class GiphyTabDetail extends StatefulWidget {
   final String type;
-  final ScrollController? scrollController;
-  const GiphyTabDetail({
-    Key? key,
-    required this.type,
-    this.scrollController,
-  }) : super(key: key);
+  final ScrollController scrollController;
+  GiphyTabDetail({Key? key, required this.type, required this.scrollController})
+      : super(key: key);
 
   @override
   _GiphyTabDetailState createState() => _GiphyTabDetailState();
@@ -38,19 +34,19 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
   List<GiphyGif> _list = [];
 
   // Direction
-  late Axis _scrollDirection;
+  final Axis _scrollDirection = Axis.vertical;
 
   // Axis count
   late int _crossAxisCount;
 
   // Spacing between gifs in grid
-  final _spacing = 8.0;
+  double _spacing = 8.0;
 
   // Default gif with
   late double _gifWidth;
 
   // Limit of query
-  int? _limit;
+  late int _limit;
 
   // is Loading gifs
   bool _isLoading = false;
@@ -64,9 +60,6 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
 
     // AppBar Provider
     _appBarProvider = Provider.of<AppBarProvider>(context, listen: false);
-
-    // GridOptions
-    _scrollDirection = Axis.vertical;
 
     // Gif WIDTH
     switch (widget.type) {
@@ -82,23 +75,23 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
       default:
         break;
     }
-
-    // ScrollController
-    widget.scrollController!.addListener(_scrollListener);
-
-    // Listen query
-    _appBarProvider.addListener(_listenerQuery);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // ScrollController
+    widget.scrollController..addListener(_scrollListener);
+
+    // Listen query
+    _appBarProvider.addListener(_listenerQuery);
+
     // Set items count responsive
     _crossAxisCount = (MediaQuery.of(context).size.width / _gifWidth).round();
 
     // Set vertical max items count
-    final _mainAxisCount =
+    int _mainAxisCount =
         ((MediaQuery.of(context).size.height - 30) / _gifWidth).round();
 
     _limit = _crossAxisCount * _mainAxisCount;
@@ -111,7 +104,7 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
   void dispose() {
     // dispose listener
     // Important
-    widget.scrollController!.removeListener(_scrollListener);
+    widget.scrollController.removeListener(_scrollListener);
     _appBarProvider.removeListener(_listenerQuery);
     super.dispose();
   }
@@ -127,15 +120,17 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: StaggeredGridView.countBuilder(
-        scrollDirection: _scrollDirection,
-        controller: widget.scrollController,
-        itemCount: _list.length,
-        crossAxisCount: _crossAxisCount,
-        mainAxisSpacing: _spacing,
-        crossAxisSpacing: _spacing,
-        itemBuilder: (ctx, idx) => _item(_list[idx]),
-        staggeredTileBuilder: (idx) => StaggeredTile.fit(1),
-      ),
+          scrollDirection: _scrollDirection,
+          controller: widget.scrollController,
+          itemCount: _list.length,
+          crossAxisCount: _crossAxisCount,
+          mainAxisSpacing: _spacing,
+          crossAxisSpacing: _spacing,
+          itemBuilder: (ctx, idx) {
+            GiphyGif _gif = _list[idx];
+            return _item(_gif);
+          },
+          staggeredTileBuilder: (idx) => StaggeredTile.fit(1)),
     );
   }
 
@@ -144,32 +139,77 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
       borderRadius: BorderRadius.circular(10.0),
       child: InkWell(
         onTap: () => _selectedGif(gif),
-        child: CachedNetworkImage(
-          imageUrl: gif.images!.fixedWidth.webp,
-          fit: BoxFit.fill,
-        ),
+        child: gif.images == null
+            ? Container()
+            : ExtendedImage.network(
+                gif.images!.fixedWidth.webp,
+                cache: true,
+                fit: BoxFit.fill,
+                headers: {'accept': 'image/*'},
+                loadStateChanged: (state) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: gif.images == null
+                        ? Container()
+                        : case2(
+                            state.extendedImageLoadState,
+                            {
+                              LoadState.loading: Container(
+                                color: Theme.of(context).cardColor,
+                                width: _gifWidth,
+                                height: gif.images!.fixedWidth.height *
+                                    (_gifWidth / gif.images!.fixedWidth.width),
+                              ),
+                              LoadState.completed: ExtendedRawImage(
+                                image: state.extendedImageInfo?.image,
+                                width: _gifWidth,
+                                height: gif.images!.fixedWidth.height *
+                                    (_gifWidth / gif.images!.fixedWidth.width),
+                                fit: widget.type == GiphyType.gifs
+                                    ? BoxFit.fill
+                                    : BoxFit.fitWidth,
+                              ),
+                              LoadState.failed: Container(
+                                color: Theme.of(context).cardColor,
+                                width: _gifWidth,
+                                height: gif.images!.fixedWidth.height *
+                                    _gifWidth /
+                                    gif.images!.fixedWidth.width,
+                              ),
+                            },
+                            Container(
+                              color: Theme.of(context).cardColor,
+                              width: _gifWidth,
+                              height: gif.images!.fixedWidth.height *
+                                  _gifWidth /
+                                  gif.images!.fixedWidth.width,
+                            ),
+                          ),
+                  );
+                },
+              ),
       ),
     );
   }
 
   Future<void> _loadMore() async {
     //Return if is loading or no more gifs
-    if (_isLoading || _collection?.pagination?.totalCount == _list.length) {
+    if (_isLoading || _collection?.pagination?.totalCount == _list.length)
       return;
-    }
 
     _isLoading = true;
 
     // Giphy Client from library
-    final client = GiphyClient(
-      apiKey: _tabProvider.apiKey,
-      randomId: _tabProvider.randomID,
-    );
+    GiphyClient client = GiphyClient(
+        apiKey: _tabProvider.apiKey, randomId: _tabProvider.randomID);
 
     // Offset pagination for query
-    final offset = _collection == null
-        ? 0
-        : _collection!.pagination!.offset + _collection!.pagination!.count;
+    int offset;
+    if (_collection == null) {
+      offset = 0;
+    } else {
+      offset = _collection!.pagination!.offset + _collection!.pagination!.count;
+    }
 
     // Get Gif or Emoji
     if (widget.type == GiphyType.emoji) {
@@ -206,7 +246,7 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
 
   // Scroll listener. if scroll end load more gifs
   void _scrollListener() {
-    if ((widget.scrollController!.position.extentAfter < 500) && !_isLoading) {
+    if ((widget.scrollController.position.extentAfter < 500) && !_isLoading) {
       _loadMore();
     }
   }
@@ -231,7 +271,7 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
   TValue? case2<TOptionType, TValue>(
     TOptionType selectedOption,
     Map<TOptionType, TValue> branches, [
-    TValue? defaultValue,
+    TValue? defaultValue = null,
   ]) {
     if (!branches.containsKey(selectedOption)) {
       return defaultValue;
