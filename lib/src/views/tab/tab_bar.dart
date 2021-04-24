@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/client/models/type.dart';
-import 'package:giphy_get/src/providers/tab_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../client/models/type.dart';
+import '../../providers/tab_provider.dart';
+
 class GiphyTabBar extends StatefulWidget {
-  final TabController tabController;
-  const GiphyTabBar({Key key, @required this.tabController}) : super(key: key);
+  final TabController? tabController;
+  const GiphyTabBar({
+    Key? key,
+    required this.tabController,
+  }) : super(key: key);
 
   @override
   _GiphyTabBarState createState() => _GiphyTabBarState();
 }
 
 class _GiphyTabBarState extends State<GiphyTabBar> {
-  TabProvider _tabProvider;
-  List<Tab> _tabs;
+  late TabProvider _tabProvider;
+  late List<Tab> _tabs;
 
   @override
   void initState() {
@@ -36,11 +40,11 @@ class _GiphyTabBarState extends State<GiphyTabBar> {
     ];
 
     //  Listen Tab Controller
-    widget.tabController.addListener(() {
-      _setTabType(widget.tabController.index);
+    widget.tabController!.addListener(() {
+      _setTabType(widget.tabController!.index);
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       _setTabType(0);
     });
   }
@@ -48,7 +52,7 @@ class _GiphyTabBarState extends State<GiphyTabBar> {
   @override
   void dispose() {
     //Dispose tabController
-    widget.tabController.dispose();
+    widget.tabController!.dispose();
     super.dispose();
   }
 
@@ -69,10 +73,10 @@ class _GiphyTabBarState extends State<GiphyTabBar> {
     );
   }
 
-  _setTabType(int pos) {
-    String _tabType;
+  void _setTabType(int pos) {
+    String? _tabType;
     // set Tab Type to provider
-    switch (widget.tabController.index) {
+    switch (widget.tabController!.index) {
       case 0:
         _tabType = GiphyType.gifs;
         break;

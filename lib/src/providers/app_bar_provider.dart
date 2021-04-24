@@ -7,10 +7,4 @@ class AppBarProvider with ChangeNotifier {
     _queryText = queryText;
     notifyListeners();
   }
-
-  @override
-  // ignore: must_call_super
-  void dispose() {
-    print("Dispose AppBarProvider");
-  }
 }

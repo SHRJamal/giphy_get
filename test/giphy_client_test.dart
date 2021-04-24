@@ -98,7 +98,7 @@ void main() {
       );
 
       // Gif Validation
-      final user = (await client.trending()).data.first.user;
+      final user = (await client.trending()).data.first.user!;
       expect(user.avatarUrl,
           'https://media2.giphy.com/avatars/adweek/iLI6u94qEbnR.jpg');
       expect(user.bannerUrl,
@@ -130,7 +130,7 @@ void main() {
       );
 
       // Gif Validation
-      final images = (await client.trending()).data.first.images;
+      final images = (await client.trending()).data.first.images!;
       expect(images.fixedHeightStill, TypeMatcher<GiphyStillImage>());
       expect(images.originalStill, TypeMatcher<GiphyStillImage>());
       expect(images.fixedWidth, GiphyFullImage());

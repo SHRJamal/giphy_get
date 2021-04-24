@@ -1,16 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/client/models/type.dart';
-import 'package:giphy_get/src/providers/app_bar_provider.dart';
-import 'package:giphy_get/src/providers/sheet_provider.dart';
-import 'package:giphy_get/src/providers/tab_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../../client/models/type.dart';
+import '../../providers/app_bar_provider.dart';
+import '../../providers/sheet_provider.dart';
+import '../../providers/tab_provider.dart';
+import 'logo.dart';
 
 class SearchAppBar extends StatefulWidget {
   // Scroll Controller
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
-  SearchAppBar({Key key, this.scrollController}) : super(key: key);
+  const SearchAppBar({
+    Key? key,
+    this.scrollController,
+  }) : super(key: key);
 
   @override
   _SearchAppBarState createState() => _SearchAppBarState();
@@ -18,26 +23,25 @@ class SearchAppBar extends StatefulWidget {
 
 class _SearchAppBarState extends State<SearchAppBar> {
   // Tab Provider
-  TabProvider _tabProvider;
+  late TabProvider _tabProvider;
 
   // AppBar Provider
-  AppBarProvider _appBarProvider;
+  late AppBarProvider _appBarProvider;
 
   // Sheet Provider
-  SheetProvider _sheetProvider;
+  late SheetProvider _sheetProvider;
 
   // Input controller
-  final TextEditingController _textEditingController =
-      new TextEditingController();
+  final _textEditingController = TextEditingController();
   // Input Focus
-  final FocusNode _focus = new FocusNode();
+  final _focus = FocusNode();
 
   //Colors
-  Color _canvasColor;
-  Color _searchBackgroundColor;
+  Color? _canvasColor;
+  Color? _searchBackgroundColor;
 
   //Is DarkMode
-  bool _isDarkMode;
+  late bool _isDarkMode;
 
   @override
   void initState() {
@@ -58,7 +62,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
   void didChangeDependencies() {
     //Colors
     _canvasColor = Theme.of(context).canvasColor;
-    _searchBackgroundColor = Theme.of(context).textTheme.bodyText1.color;
+    _searchBackgroundColor = Theme.of(context).textTheme.bodyText1!.color;
 
     //Is DarkMode
     _isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -89,12 +93,8 @@ class _SearchAppBarState extends State<SearchAppBar> {
       elevation: 0.0,
       titleSpacing: 10.0,
       automaticallyImplyLeading: false,
-      title: _searchWidget(),
-      actions: [],
-    );
-  }
-
-  Widget _searchWidget() => Column(
+      actions: const [],
+      title: Column(
         children: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -102,44 +102,36 @@ class _SearchAppBarState extends State<SearchAppBar> {
             height: 2,
             color: _searchBackgroundColor,
           ),
-          _tabProvider.tabType == GiphyType.emoji
-              ? Container(height: 40.0, child: _giphyLogo())
-              : Container(
-                  decoration: BoxDecoration(
-                      color: _isDarkMode ? Colors.white : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8.0)),
-                  height: 40.0,
-                  child: Center(
-                    child: TextField(
-                      autofocus: _sheetProvider.initialExtent ==
-                          SheetProvider.maxExtent,
-                      focusNode: _focus,
-                      controller: _textEditingController,
-                      style: TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                          prefixIcon: _searchIcon(),
-                          hintStyle: TextStyle(color: Colors.black45),
-                          hintText: _tabProvider.searchText,
-                          border: InputBorder.none),
-                      autocorrect: false,
-                    ),
-                  ),
+          if (_tabProvider.tabType == GiphyType.emoji)
+            SizedBox(
+              height: 40.0,
+              child: GiphyLogo(),
+            )
+          else
+            Container(
+              decoration: BoxDecoration(
+                  color: _isDarkMode ? Colors.white : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8.0)),
+              height: 40.0,
+              child: Center(
+                child: TextField(
+                  autofocus:
+                      _sheetProvider.initialExtent == SheetProvider.maxExtent,
+                  focusNode: _focus,
+                  controller: _textEditingController,
+                  style: TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                      prefixIcon: _searchIcon(),
+                      hintStyle: TextStyle(color: Colors.black45),
+                      hintText: _tabProvider.searchText,
+                      border: InputBorder.none),
+                  autocorrect: false,
                 ),
+              ),
+            ),
         ],
-      );
-
-  Widget _giphyLogo() {
-    const basePath = "assets/img/";
-    String logoPath = Theme.of(context).brightness == Brightness.light
-        ? "GIPHY_light.png"
-        : "GIPHY_dark.png";
-
-    return Center(
-        child: Image.asset(
-      "$basePath$logoPath",
-      width: 100.0,
-      package: 'giphy_get',
-    ));
+      ),
+    );
   }
 
   Widget _searchIcon() {
@@ -148,12 +140,13 @@ class _SearchAppBarState extends State<SearchAppBar> {
     } else {
       return ShaderMask(
         shaderCallback: (bounds) => LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.pinkAccent,
-              Colors.purple[700],
-            ]).createShader(bounds),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.pinkAccent,
+            Colors.purple[700]!,
+          ],
+        ).createShader(bounds),
         child: Icon(Icons.search),
       );
     }
@@ -165,6 +158,5 @@ class _SearchAppBarState extends State<SearchAppBar> {
         _sheetProvider.initialExtent == SheetProvider.minExtent) {
       _sheetProvider.initialExtent = SheetProvider.maxExtent;
     }
-    print("Focus : ${_focus.hasFocus}");
   }
 }

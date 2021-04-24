@@ -1,39 +1,38 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:giphy_get/src/client/models/gif.dart';
-import 'package:giphy_get/src/client/models/languages.dart';
-import 'package:giphy_get/src/client/models/rating.dart';
-import 'package:giphy_get/src/client/models/type.dart';
 import 'package:http/http.dart';
-import 'package:meta/meta.dart';
 
 import 'models/collection.dart';
+import 'models/gif.dart';
+import 'models/languages.dart';
+import 'models/rating.dart';
+import 'models/type.dart';
 
 class GiphyClient {
   static final baseUri = Uri(scheme: 'https', host: 'api.giphy.com');
 
-  final String _apiKey;
+  final String? _apiKey;
   final Client _client;
-  final String _random_id;
+  final String _randomId;
   final String _apiVersion = 'v1';
 
-  GiphyClient({@required String apiKey, Client client, String randomId})
+  GiphyClient({required String? apiKey, Client? client, String? randomId})
       : _apiKey = apiKey,
-        _random_id = randomId ?? '',
+        _randomId = randomId ?? '',
         _client = client ?? Client();
 
   Future<GiphyCollection> trending({
     int offset = 0,
-    int limit = 30,
-    String rating = GiphyRating.g,
-    String lang = GiphyLanguage.english,
+    int? limit = 30,
+    String? rating = GiphyRating.g,
+    String? lang = GiphyLanguage.english,
     String type = GiphyType.gifs,
   }) async {
     return _fetchCollection(
       baseUri.replace(
         path: '$_apiVersion/$type/trending',
-        queryParameters: <String, String>{
+        queryParameters: <String, String?>{
           'offset': '$offset',
           'limit': '$limit',
           'rating': rating,
@@ -46,15 +45,15 @@ class GiphyClient {
   Future<GiphyCollection> search(
     String query, {
     int offset = 0,
-    int limit = 30,
-    String rating = GiphyRating.g,
-    String lang = GiphyLanguage.english,
+    int? limit = 30,
+    String? rating = GiphyRating.g,
+    String? lang = GiphyLanguage.english,
     String type = GiphyType.gifs,
   }) async {
     return _fetchCollection(
       baseUri.replace(
         path: '$_apiVersion/$type/search',
-        queryParameters: <String, String>{
+        queryParameters: <String, String?>{
           'q': query,
           'offset': '$offset',
           'limit': '$limit',
@@ -67,7 +66,7 @@ class GiphyClient {
 
   Future<GiphyCollection> emojis({
     int offset = 0,
-    int limit = 30,
+    int? limit = 30,
     String rating = GiphyRating.g,
     String lang = GiphyLanguage.english,
   }) async {
@@ -85,14 +84,14 @@ class GiphyClient {
   }
 
   Future<GiphyGif> random({
-    String tag,
+    String? tag,
     String rating = GiphyRating.g,
     String type = GiphyType.gifs,
   }) async {
     return _fetchGif(
       baseUri.replace(
         path: '$_apiVersion/$type/random',
-        queryParameters: <String, String>{
+        queryParameters: <String, String?>{
           'tag': tag,
           'rating': rating,
         },
@@ -103,7 +102,7 @@ class GiphyClient {
   Future<GiphyGif> byId(String id) async =>
       _fetchGif(baseUri.replace(path: 'v1/gifs/$id'));
 
-  Future<String> getRandomId() async =>
+  Future<String?> getRandomId() async =>
       _getRandomId(baseUri.replace(path: 'v1/randomid'));
 
   Future<GiphyGif> _fetchGif(Uri uri) async {
@@ -120,21 +119,20 @@ class GiphyClient {
         json.decode(response.body) as Map<String, dynamic>);
   }
 
-  Future<String> _getRandomId(Uri uri) async {
+  Future<String?> _getRandomId(Uri uri) async {
     final response = await _getWithAuthorization(uri);
-    var decoded = json.decode(response.body);
-    return decoded["data"]["random_id"];
+    final decoded = json.decode(response.body);
+    return decoded["data"]["random_id"] as String?;
   }
 
   Future<Response> _getWithAuthorization(Uri uri) async {
     final response = await _client.get(
       uri
           .replace(
-            queryParameters: Map<String, String>.from(uri.queryParameters)
+            queryParameters: Map<String, String?>.from(uri.queryParameters)
               ..putIfAbsent('api_key', () => _apiKey)
-              ..putIfAbsent('random_id', () => _random_id),
+              ..putIfAbsent('random_id', () => _randomId),
           )
-          .toString(),
     );
 
     if (response.statusCode == 200) {

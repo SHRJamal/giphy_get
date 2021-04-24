@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/client/models/type.dart';
 
-import 'giphy_tab_detail.dart';
+import '../../client/models/type.dart';
+import 'detail.dart';
 
 class GiphyTabView extends StatelessWidget {
-  final ScrollController scrollController;
-  final TabController tabController;
+  final ScrollController? scrollController;
+  final TabController? tabController;
 
-  const GiphyTabView({Key key, @required this.scrollController,this.tabController})
-      : super(key: key);
+  const GiphyTabView({
+    Key? key,
+    required this.scrollController,
+    this.tabController,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

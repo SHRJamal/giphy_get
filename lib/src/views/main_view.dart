@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/providers/sheet_provider.dart';
-import 'package:giphy_get/src/views/appbar/searchappbar.dart';
-import 'package:giphy_get/src/views/tab/giphy_tab_bar.dart';
-import 'package:giphy_get/src/views/tab/giphy_tab_view.dart';
+
 import 'package:provider/provider.dart';
 
-class MainView extends StatefulWidget {
-  MainView({Key key}) : super(key: key);
+import '../providers/sheet_provider.dart';
+import 'appbar/searchappbar.dart';
+import 'tab/tab_bar.dart';
+import 'tab/tab_view.dart';
 
+class MainView extends StatefulWidget {
   @override
   _MainViewState createState() => _MainViewState();
 }
@@ -15,62 +15,50 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView>
     with SingleTickerProviderStateMixin {
   // Scroll Controller
-  ScrollController _scrollController;
+  ScrollController? _scrollController;
 
   // Sheet Provider
-  SheetProvider _sheetProvider;
+  late SheetProvider _sheetProvider;
 
   // Tab Controller
-  TabController _tabController;
+  TabController? _tabController;
 
   @override
   void initState() {
     super.initState();
-
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void didChangeDependencies() {
     _sheetProvider = Provider.of<SheetProvider>(context, listen: false);
-
     super.didChangeDependencies();
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return _draggableScrollableSheet();
-  }
-
-  Widget _draggableScrollableSheet() => DraggableScrollableSheet(
+    return DraggableScrollableSheet(
       expand: _sheetProvider.isExpanded,
       minChildSize: SheetProvider.minExtent,
       maxChildSize: SheetProvider.maxExtent,
       initialChildSize: _sheetProvider.initialExtent,
       builder: (ctx, scrollController) {
         // Set ScrollController
-
-        this._scrollController = scrollController;
-        return _bottomSheetBody();
-      });
-
-  Widget _bottomSheetBody() => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SearchAppBar(scrollController: this._scrollController),
-          GiphyTabBar(
-            tabController: _tabController,
-          ),
-          Expanded(
+        _scrollController = scrollController;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SearchAppBar(scrollController: _scrollController),
+            GiphyTabBar(tabController: _tabController),
+            Expanded(
               child: GiphyTabView(
-            tabController: _tabController,
-            scrollController: this._scrollController,
-          ))
-        ],
-      );
+                tabController: _tabController,
+                scrollController: _scrollController,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
